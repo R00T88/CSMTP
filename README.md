@@ -16,7 +16,7 @@ CSMTP allow you to send email via command line.
   - WinXP - Win7 x86/x64 - Win8 x86/x64 - Win8.1 x86/x64 - Win10 x64
 
 #Command Line
-	-server <string>: SMTP server (mandatory)
+	- -server <string>: SMTP server (mandatory)
   -port <number>: Port (default: 25)
   -security <number>: 0 -> Nothing / 1 -> TLS / 2 -> SSL (default: 0)
 	-auth <number>: 0 -> No / 1 -> Yes (default: 0)
