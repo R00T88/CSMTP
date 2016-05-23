@@ -3,7 +3,7 @@
 CSMTP allow you to send email via command line.
 
 #Features
-  - Support TLS/SSL ( OpenSSL v1.0.2g )
+  - Support TLS/SSL ( OpenSSL v1.0.2h )
   - Support multi receiver email address with ; token
   - Support HTML body
   - Support multi attachment with ; token
