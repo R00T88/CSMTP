@@ -237,9 +237,8 @@ public:
 	void SetXPriority(CSmptXPriority);
 	void SetSMTPServer(const char* server, const unsigned short port=0, bool authenticate=true);
 
-	char *szMsgId;
+	char* szMsgId;
 	long long dwNumChar;
-	LPHOSTENT host;
 
 	std::string MsgBodyHTML;
 

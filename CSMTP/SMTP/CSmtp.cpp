@@ -1045,7 +1045,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 
 		hSocket = INVALID_SOCKET;
 
-		if((hSocket = socket(PF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+		if((hSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
 			throw ECSmtp(ECSmtp::WSA_INVALID_SOCKET);
 
 		if(nPort_ != 0)
@@ -1062,17 +1062,20 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 		sockAddr.sin_family = AF_INET;
 		sockAddr.sin_port = nPort;
 
-		if((sockAddr.sin_addr.s_addr = inet_addr(szServer)) == INADDR_NONE)
-		{			
-			host = gethostbyname(szServer);
-			if (host)
-				memcpy(&sockAddr.sin_addr, host->h_addr_list[0], host->h_length);
-			else
-			{
-				closesocket(hSocket);
-				throw ECSmtp(ECSmtp::WSA_GETHOSTBY_NAME_ADDR);
-			}				
+		struct addrinfo hints, *hres;
+		
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_family = AF_INET;
+
+		if(getaddrinfo(szServer, NULL, &hints, &hres) != 0)
+		{
+			closesocket(hSocket);
+			throw ECSmtp(ECSmtp::WSA_GETHOSTBY_NAME_ADDR);
 		}
+
+		sockAddr.sin_addr = ((struct sockaddr_in *)(hres->ai_addr))->sin_addr;
+		freeaddrinfo(hres);
 
 		// start non-blocking mode for socket:
 		if(ioctlsocket(hSocket, FIONBIO, (unsigned long*)&ul) == SOCKET_ERROR)
@@ -1661,7 +1664,7 @@ void CSmtp::FormatHeader(char* header)
 	if(dwResult >= 0)
 		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d +%I64d00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
 																	month[timeinfo.tm_mon],
-																	timeinfo.tm_year+1900,
+																	timeinfo.tm_year + 1900,
 																	timeinfo.tm_hour,
 																	timeinfo.tm_min,
 																	timeinfo.tm_sec,
@@ -1669,7 +1672,7 @@ void CSmtp::FormatHeader(char* header)
 	else
 		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d -%I64d00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
 																	month[timeinfo.tm_mon],
-																	timeinfo.tm_year+1900,
+																	timeinfo.tm_year + 1900,
 																	timeinfo.tm_hour,
 																	timeinfo.tm_min,
 																	timeinfo.tm_sec,
@@ -1682,8 +1685,8 @@ void CSmtp::FormatHeader(char* header)
 
 	dwRandomHash = ((timeinfo.tm_year + 1900 * rand()) + (timeinfo.tm_mon + rand()) + (timeinfo.tm_mday + rand()) + (timeinfo.tm_hour * rand()) + (timeinfo.tm_min + rand()) + (timeinfo.tm_sec * rand()) + rand()) * rand();
 
-	sprintf_s(szMsgId, BUFFER_MSGID_SIZE, "%04d%02d%02d%02d%02d%02d.%I64d@", timeinfo.tm_year+1900, 
-												timeinfo.tm_mon, 
+	sprintf_s(szMsgId, BUFFER_MSGID_SIZE, "%04d%02d%02d%02d%02d%02d.%llu@", timeinfo.tm_year + 1900, 
+												timeinfo.tm_mon + 1,
 												timeinfo.tm_mday,
 												timeinfo.tm_hour,
 												timeinfo.tm_min,
@@ -1691,7 +1694,7 @@ void CSmtp::FormatHeader(char* header)
 												dwRandomHash);
 
 	strcat_s(header, BUFFER_SIZE, szMsgId);
-	strcat_s(header, BUFFER_SIZE, host->h_name);
+	strcat_s(header, BUFFER_SIZE, m_sSMTPSrvName.c_str());
 	strcat_s(header, BUFFER_SIZE, ">\r\n");
 
 	// From: <SP> <sender>  <SP> "<" <sender-email> ">" <CRLF>
