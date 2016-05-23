@@ -17,8 +17,8 @@ CSMTP allow you to send email via command line.
 
 #Command Line
   -server <string>: SMTP server (mandatory)
-	-port <number>: Port (default: 25)
-	-security <number>: 0 -> Nothing / 1 -> TLS / 2 -> SSL (default: 0)
+  -port <number>: Port (default: 25)
+  -security <number>: 0 -> Nothing / 1 -> TLS / 2 -> SSL (default: 0)
 	-auth <number>: 0 -> No / 1 -> Yes (default: 0)
 	-user <string>: user
 	-pwd <string>: password (encoded)
