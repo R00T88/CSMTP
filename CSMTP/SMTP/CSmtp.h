@@ -19,6 +19,7 @@
 #include <fstream>
 #include <iostream>
 
+// OpenSSL 1.0.2h
 #include "openssl\ssl.h"
 
 #define TIME_IN_SEC			3 * 60	// how long client will wait for server response in non-blocking mode

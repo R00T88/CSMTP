@@ -9,12 +9,16 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "CSmtp.h"
+
 #include "..\\Security\base64.h"
+
+// OpenSSL 1.0.2h
 #include "openssl/err.h"
 #include "openssl/md5.h"
 
 #include <cassert>
 
+// OpenSSL 1.0.2h - /MT
 #pragma comment(lib, "ssleay32.lib")
 #pragma comment(lib, "libeay32.lib")
 
