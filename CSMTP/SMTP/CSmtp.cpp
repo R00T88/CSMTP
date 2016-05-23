@@ -1662,7 +1662,7 @@ void CSmtp::FormatHeader(char* header)
 
 	// Date: <SP> <dd> <SP> <mon> <SP> <yy> <SP> <hh> ":" <mm> ":" <ss> <SP> <zone> <CRLF>
 	if(dwResult >= 0)
-		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d +%I64d00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
+		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d +%lld00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
 																	month[timeinfo.tm_mon],
 																	timeinfo.tm_year + 1900,
 																	timeinfo.tm_hour,
@@ -1670,7 +1670,7 @@ void CSmtp::FormatHeader(char* header)
 																	timeinfo.tm_sec,
 																	dwResult); 
 	else
-		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d -%I64d00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
+		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d -%lld00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
 																	month[timeinfo.tm_mon],
 																	timeinfo.tm_year + 1900,
 																	timeinfo.tm_hour,
