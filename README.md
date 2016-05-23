@@ -17,23 +17,23 @@ CSMTP allow you to send email via command line.
 
 #Command Line
 	1. -server <string>: SMTP server (mandatory)
-  -port <number>: Port (default: 25)
-  -security <number>: 0 -> Nothing / 1 -> TLS / 2 -> SSL (default: 0)
-	-auth <number>: 0 -> No / 1 -> Yes (default: 0)
-	-user <string>: user
-	-pwd <string>: password (encoded)
-	-from <string>: sender (mandatory)
-	-to <string>: receiver (mandatory)
-	-cc <string>: CC
-	-bcc <string>: BCC
-	-subject <string>: Subject (mandatory)
-  -body <string>: Body
-	-attachment <string>: Attachment path
-	-urgent <number>: 0 -> No / 1 -> Yes
-	-read <number>: read notify 0 -> No / 1 -> Yes
+	2. -port <number>: Port (default: 25)
+	3. -security <number>: 0 -> Nothing / 1 -> TLS / 2 -> SSL (default: 0)
+	4. -auth <number>: 0 -> No / 1 -> Yes (default: 0)
+	5. -user <string>: user
+	6. -pwd <string>: password (encoded)
+	7. -from <string>: sender (mandatory)
+	8. -to <string>: receiver (mandatory)
+	9. -cc <string>: CC
+	10. -bcc <string>: BCC
+	11. -subject <string>: Subject (mandatory)
+	12. -body <string>: Body
+	13. -attachment <string>: Attachment path
+	14. -urgent <number>: 0 -> No / 1 -> Yes
+	15. -read <number>: read notify 0 -> No / 1 -> Yes
 	
 #Encode user password:
-	-encode <string>: user password (mandatory)
+	1. -encode <string>: user password (mandatory)
 
 #Thanks to
   - Jakub Piwowarczyk
