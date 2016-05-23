@@ -33,7 +33,7 @@ CSMTP allow you to send email via command line.
 	-read <number>: read notify 0 -> No / 1 -> Yes
 	
 #Encode user password:
-	- -encode <string>: user password (mandatory)
+	- encode <string>: user password (mandatory)
 
 #Thanks to
   - Jakub Piwowarczyk
