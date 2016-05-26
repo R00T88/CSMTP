@@ -1,6 +1,6 @@
 # CSMTP
 
-CSMTP allow you to send email via command line.
+CSMTP allow you to send email via command line and save message to sent folder
 
 #Features
   - Support TLS/SSL ( OpenSSL v1.0.2h )
@@ -11,9 +11,10 @@ CSMTP allow you to send email via command line.
   - Support urgent flag
   - Support read notification
   - Support password encoding for command line
+  - Support save message to sent folder
   
 #Supported OS
-  - WinXP - Win7 x86/x64 - Win8 x86/x64 - Win8.1 x86/x64 - Win10 x64
+  - Win7 x86/x64 - Win8 x86/x64 - Win8.1 x86/x64 - Win10 x64
 
 #Command Line
 	1. -server <string>: SMTP server (mandatory)
@@ -31,6 +32,12 @@ CSMTP allow you to send email via command line.
 	13. -attachment <string>: Attachment path
 	14. -urgent <number>: 0 -> No / 1 -> Yes
 	15. -read <number>: read notify 0 -> No / 1 -> Yes
+	16. -IMAPserver <string>: IMAP server (mandatory)
+	17. -IMAPport <number>: Port (default: 143) (mandatory)
+	18. -IMAPsecurity <number>: 0 -> Nothing / 1 -> TLS / 2 -> SSL (default: 0) (mandatory)
+	19. -IMAPuser <string>: user (mandatory)
+	20. -IMAPpwd <string>: password (encoded) (mandatory)
+	21. -IMAPsentfolder <string>: sent folder tosave message (mandatory)
 	
 #Encode user password:
 	1. -encode <string>: user password (mandatory)
