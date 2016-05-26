@@ -209,7 +209,7 @@ CSmtp::CSmtp()
 	m_bHTML = false;
 	m_bReadReceipt = false;
 
-	m_sCharSet = "utf-8";
+	m_sCharSet = "iso-8859-15";
 	m_sCharEncoding = "8bit";
 
 	m_sXMailer = "v5.0";

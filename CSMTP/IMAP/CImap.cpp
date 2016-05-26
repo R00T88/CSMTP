@@ -202,7 +202,7 @@ CImap::CImap()
 	dwNumChar = 0;
 	dwNumCharSent = 0;
 
-	m_sCharSet = "utf-8";
+	m_sCharSet = "iso-8859-15";
 	m_sCharEncoding = "8bit";
 
 	m_sXMailer = "v5.0";
