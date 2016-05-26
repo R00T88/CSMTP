@@ -1202,8 +1202,7 @@ void CImap::FormatHeader(char* header)
 // MODIFIES GL: RecvBuf
 //     RETURNS: void
 //      AUTHOR: Sebastiano Bertini
-// AUTHOR/DATE: 25-06-2016
-//							
+// AUTHOR/DATE: 25-06-2016			
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // MODIFICATION: Receives data as much as possible. Another function ReceiveResponse

@@ -2766,6 +2766,7 @@ void CSmtp::ReceiveResponse(Command_Entry* pEntry)
 				// see if this is the last line
 				// the last line must match the pattern: XYZ<SP>*<CRLF> or XYZ<CRLF> where XYZ is a string of 3 digits 
 				offset += 2; // skip <CRLF>
+
 				if(offset - begin >= 5)
 				{
 					if(isdigit(line[begin]) && isdigit(line[begin+1]) && isdigit(line[begin+2]))
