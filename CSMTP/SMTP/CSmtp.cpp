@@ -738,9 +738,9 @@ void CSmtp::Send()
 			strcat_s(SendBuf, BUFFER_SIZE, SMTP_BOUNDARY_ALTERNATIVE);
 			strcat_s(SendBuf, BUFFER_SIZE, "\r\n");
 
-			strcat_s(SendBuf, BUFFER_SIZE, "Content-Type: text/html; charset=");
+			strcat_s(SendBuf, BUFFER_SIZE, "Content-Type: text/html; charset=\"");
 			strcat_s(SendBuf, BUFFER_SIZE, m_sCharSet.c_str());
-			strcat_s(SendBuf, BUFFER_SIZE, "\r\n");
+			strcat_s(SendBuf, BUFFER_SIZE, "\"\r\n");
 			strcat_s(SendBuf, BUFFER_SIZE, "Content-Transfer-Encoding: ");
 			strcat_s(SendBuf, BUFFER_SIZE, m_sCharEncoding.c_str());
 			strcat_s(SendBuf, BUFFER_SIZE, "\r\n");
@@ -1781,9 +1781,9 @@ void CSmtp::FormatHeader(char* header)
 			strcat_s(header, BUFFER_SIZE, SMTP_BOUNDARY_ALTERNATIVE);
 			strcat_s(header, BUFFER_SIZE, "\r\n");
 
-			strcat_s(header, BUFFER_SIZE, "Content-Type: text/plain; charset=");
+			strcat_s(header, BUFFER_SIZE, "Content-Type: text/plain; charset=\"");
 			strcat_s(header, BUFFER_SIZE, m_sCharSet.c_str());
-			strcat_s(header, BUFFER_SIZE, "\r\n");
+			strcat_s(header, BUFFER_SIZE, "\"\r\n");
 			strcat_s(header, BUFFER_SIZE, "Content-Transfer-Encoding: ");
 			strcat_s(header, BUFFER_SIZE, m_sCharEncoding.c_str());
 			strcat_s(header, BUFFER_SIZE, "\r\n");
@@ -1791,9 +1791,9 @@ void CSmtp::FormatHeader(char* header)
 		}
 		else
 		{
-			strcat_s(header, BUFFER_SIZE, "Content-Type: text/plain; charset=");
+			strcat_s(header, BUFFER_SIZE, "Content-Type: text/plain; charset=\"");
 			strcat_s(header, BUFFER_SIZE, m_sCharSet.c_str());
-			strcat_s(header, BUFFER_SIZE, "\r\n");
+			strcat_s(header, BUFFER_SIZE, "\"\r\n");
 			strcat_s(header, BUFFER_SIZE, "Content-Transfer-Encoding: ");
 			strcat_s(header, BUFFER_SIZE, m_sCharEncoding.c_str());
 			strcat_s(header, BUFFER_SIZE, "\r\n");
@@ -1826,9 +1826,9 @@ void CSmtp::FormatHeader(char* header)
 			strcat_s(header, BUFFER_SIZE, SMTP_BOUNDARY_ALTERNATIVE);
 			strcat_s(header, BUFFER_SIZE, "\r\n");
 
-			strcat_s(header, BUFFER_SIZE, "Content-Type: text/plain; charset=");
+			strcat_s(header, BUFFER_SIZE, "Content-Type: text/plain; charset=\"");
 			strcat_s(header, BUFFER_SIZE, m_sCharSet.c_str());
-			strcat_s(header, BUFFER_SIZE, "\r\n");
+			strcat_s(header, BUFFER_SIZE, "\"\r\n");
 			strcat_s(header, BUFFER_SIZE, "Content-Transfer-Encoding: ");
 			strcat_s(header, BUFFER_SIZE, m_sCharEncoding.c_str());
 			strcat_s(header, BUFFER_SIZE, "\r\n");
@@ -1836,9 +1836,9 @@ void CSmtp::FormatHeader(char* header)
 		}
 		else
 		{
-			strcat_s(header, BUFFER_SIZE, "Content-Type: text/plain; charset=");
+			strcat_s(header, BUFFER_SIZE, "Content-Type: text/plain; charset=\"");
 			strcat_s(header, BUFFER_SIZE, m_sCharSet.c_str());
-			strcat_s(header, BUFFER_SIZE, "\r\n");
+			strcat_s(header, BUFFER_SIZE, "\"\r\n");
 			strcat_s(header, BUFFER_SIZE, "Content-Transfer-Encoding: ");
 			strcat_s(header, BUFFER_SIZE, m_sCharEncoding.c_str());
 			strcat_s(header, BUFFER_SIZE, "\r\n");
