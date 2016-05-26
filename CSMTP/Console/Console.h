@@ -1,4 +1,6 @@
 
+long long dwNumMailChar;
+
 //=======================================================================
 // ERROR_CSMTP_CONSOLE
 //=======================================================================
@@ -20,6 +22,13 @@ enum ERROR_CSMTP_CONSOLE
 	CONSOLE_PARAM_AUTH_NOT_VALID,
 	CONSOLE_PARAM_URGENT_NOT_VALID,
 	CONSOLE_PARAM_READ_NOT_VALID,
+	CONSOLE_PARAM_SAVE_NOT_VALID,
+	CONSOLE_PARAM_IMAP_SERVER_NOT_FOUND,
+	CONSOLE_PARAM_IMAP_PORT_NOT_FOUND,
+	CONSOLE_PARAM_IMAP_SECURITY_NOT_FOUND,
+	CONSOLE_PARAM_IMAP_USER_NOT_FOUND,
+	CONSOLE_PARAM_IMAP_PWD_NOT_FOUND,
+	CONSOLE_PARAM_IMAP_FOLDER_NOT_FOUND,
 	CONSOLE_ENCODE_STRING_NOT_FOUND,
 	CONSOLE_GLOBALALLOC_FAILED,
 	CONSOLE_GLOBALUNLOCK_FAILED,
@@ -180,9 +189,155 @@ int SMTP_SendMail(std::string szSMTPAddr,
 
 		CMail.Send();
 
+		dwNumMailChar = CMail.dwNumChar;
+
 		return 0;
 	}
 	catch (ECSmtp e)
+	{
+		std::cout << "\n[!] - " << e.GetErrorText() << "\n";
+		return 1;
+	}
+	catch (...)
+	{
+		std::cout << "\n[!] - General Error -> " << GetLastError() << " !\n";
+		return 1;
+	}
+}
+
+//=======================================================================
+// IMAP_AppendMail
+//=======================================================================
+int IMAP_AppendMail(std::string szIMAPAddr,
+					int dwPort,
+					int dwSecurityType,
+					std::string szUser,
+					std::string szPwd,
+					std::string szSenderName,
+					std::string szSender,
+					std::vector<std::string> szTo,
+					std::vector<std::string> szCC,
+					std::vector<std::string> szBCC,
+					std::string szSubject,
+					std::string szBody,
+					std::vector<std::string> szAttachment,
+					int dwPriority,
+					int dwHTML,
+					std::string szBodyHTML,
+					int dwRead,
+					std::string szIMAPFolder)
+{
+	CImap CMail;
+
+	try
+	{
+		// Impostazione IMAP Server
+		CMail.SetIMAPServer(szIMAPAddr.c_str(), dwPort, true);
+
+		// Impostazione tipo connessione
+		switch (dwSecurityType)
+		{
+		case 0:
+			CMail.SetSecurityType(IMAP_NO_SECURITY);
+			break;
+		case 1:
+			CMail.SetSecurityType(IMAP_USE_TLS);
+			break;
+		case 2:
+			CMail.SetSecurityType(IMAP_USE_SSL);
+			break;
+		case 3:
+			CMail.SetSecurityType(IMAP_DO_NOT_SET);
+			break;
+		}
+
+		// Impostazione autenticazione
+		CMail.SetLogin(szUser.c_str());
+		CMail.SetPassword(szPwd.c_str());
+
+		// Imposta nome mittente
+		if (szSenderName.size() > 0)
+			CMail.SetSenderName(szSenderName.c_str());
+
+		// From
+		CMail.SetSenderMail(szSender.c_str());
+
+		std::vector<std::string>::iterator pEmailIterator;
+
+		// To
+		for (pEmailIterator = szTo.begin(); pEmailIterator != szTo.end(); pEmailIterator++)
+		{
+			std::string pCurrentString = *pEmailIterator;
+			CMail.AddRecipient(pCurrentString.c_str());
+		}
+
+		// CC
+		if (szCC.size() > 0)
+		{
+			for (pEmailIterator = szCC.begin(); pEmailIterator != szCC.end(); pEmailIterator++)
+			{
+				std::string pCurrentString = *pEmailIterator;
+				CMail.AddCCRecipient(pCurrentString.c_str());
+			}
+		}
+
+		// BCC
+		if (szBCC.size() > 0)
+		{
+			for (pEmailIterator = szBCC.begin(); pEmailIterator != szBCC.end(); pEmailIterator++)
+			{
+				std::string pCurrentString = *pEmailIterator;
+				CMail.AddBCCRecipient(pCurrentString.c_str());
+			}
+		}
+
+		// Imposta oggetto mail
+		CMail.SetSubject(szSubject.c_str());
+
+		// Imposta corpo mail
+		CMail.AddMsgLine(szBody.c_str());
+
+		// Allegati
+		if (szAttachment.size() > 0)
+		{
+			for (pEmailIterator = szAttachment.begin(); pEmailIterator != szAttachment.end(); pEmailIterator++)
+			{
+				std::string pCurrentString = *pEmailIterator;
+				CMail.AddAttachment(pCurrentString.c_str());
+			}
+		}
+
+		// Imposta priorità mail
+		switch (dwPriority)
+		{
+		case 2:
+			CMail.SetXPriority(IMAP_XPRIORITY_HIGH);
+			break;
+		case 4:
+			CMail.SetXPriority(IMAP_XPRIORITY_LOW);
+			break;
+		default:
+			CMail.SetXPriority(IMAP_XPRIORITY_NORMAL);
+		}
+
+		if (dwHTML == 1)
+		{
+			CMail.m_bHTML = true;
+			CMail.MsgBodyHTML = szBodyHTML.c_str();
+		}
+
+		if (dwRead == 1)
+			CMail.SetReadReceipt(true);
+
+		// Numero caratteri mail
+		CMail.dwNumChar = dwNumMailChar;
+		CMail.SentFolder = szIMAPFolder;
+
+		CMail.SaveMessage();
+
+		return 0;
+	}
+	catch (ECImap e)
 	{
 		std::cout << "\n[!] - " << e.GetErrorText() << "\n";
 		return 1;
@@ -339,10 +494,16 @@ int HandleConsoleParam(int argc, char** argv)
 		if (atoi(szAuth.c_str()) == 1)
 		{
 			if (!cmdOptionExists(argv, argv + argc, "-user"))
-				return CONSOLE_PARAM_USER_NOT_FOUND;
+			{
+				std::cout << "\n[!] - " << CONSOLE_PARAM_USER_NOT_FOUND << " - Valore parametro -user non trovato!\n";
+				return 1;
+			}
 
 			if (!cmdOptionExists(argv, argv + argc, "-pwd"))
-				return CONSOLE_PARAM_PWD_NOT_FOUND;
+			{
+				std::cout << "\n[!] - " << CONSOLE_PARAM_PWD_NOT_FOUND << " - Valore parametro -pwd non trovato!\n";
+				return 1;
+			}
 
 			szUser = getCmdOption(argv, argv + argc, "-user");
 			szPwd = getCmdOption(argv, argv + argc, "-pwd");
@@ -498,9 +659,92 @@ int HandleConsoleParam(int argc, char** argv)
 			return 1;
 		}
 
-		int dwResult = SMTP_SendMail(szServerName, atoi(szPort.c_str()), atoi(szSecurity.c_str()), atoi(szAuth.c_str()), 
-										szUser, szPwd, szFrom, szFrom, szTo, szCC, szBCC, 
+		// Salvataggio
+		std::string	szSave;
+
+		if (!cmdOptionExists(argv, argv + argc, "-save"))
+			szSave = "0";
+		else
+			szSave = getCmdOption(argv, argv + argc, "-save");
+
+		if (strcmp(szSave.c_str(), "0") != 0 && (atoi(szSave.c_str()) < 0 || atoi(szSave.c_str()) > 1))
+		{
+			std::cout << "\n[!] - " << CONSOLE_PARAM_SAVE_NOT_VALID << " - Valore parametro -save non compreso tra 0 e 1!\n";
+			return 1;
+		}
+
+		// Server / Porta / Security / Utente / Password
+		std::string	szIMAPServer;
+		std::string	szIMAPPort = "0";
+		std::string	szIMAPSecurity = "0";
+		std::string	szIMAPUser;
+		std::string	szIMAPPwd;
+		std::string	szIMAPsentFolder;
+
+		if (atoi(szSave.c_str()) == 1)
+		{
+			if (!cmdOptionExists(argv, argv + argc, "-IMAPserver"))
+			{
+				std::cout << "\n[!] - " << CONSOLE_PARAM_IMAP_SERVER_NOT_FOUND << " - Valore parametro -IMAPserver non trovato!\n";
+				return 1;
+			}
+
+			if (!cmdOptionExists(argv, argv + argc, "-IMAPport"))
+			{
+				std::cout << "\n[!] - " << CONSOLE_PARAM_IMAP_PORT_NOT_FOUND << " - Valore parametro -IMAPport non trovato!\n";
+				return 1;
+			}
+
+			if (!cmdOptionExists(argv, argv + argc, "-IMAPsecurity"))
+			{
+				std::cout << "\n[!] - " << CONSOLE_PARAM_IMAP_SECURITY_NOT_FOUND << " - Valore parametro -IMAPsecurity non trovato!\n";
+				return 1;
+			}
+
+			if (!cmdOptionExists(argv, argv + argc, "-IMAPuser"))
+			{
+				std::cout << "\n[!] - " << CONSOLE_PARAM_IMAP_USER_NOT_FOUND << " - Valore parametro -IMAPuser non trovato!\n";
+				return 1;
+			}
+
+			if (!cmdOptionExists(argv, argv + argc, "-IMAPpwd"))
+			{
+				std::cout << "\n[!] - " << CONSOLE_PARAM_IMAP_PWD_NOT_FOUND << " - Valore parametro -IMAPpwd non trovato!\n";
+				return 1;
+			}
+
+			if (!cmdOptionExists(argv, argv + argc, "-IMAPsentfolder"))
+			{
+				std::cout << "\n[!] - " << CONSOLE_PARAM_IMAP_FOLDER_NOT_FOUND << " - Valore parametro -IMAPserver non trovato!\n";
+				return 1;
+			}
+
+			szIMAPServer = getCmdOption(argv, argv + argc, "-IMAPserver");
+			szIMAPPort = getCmdOption(argv, argv + argc, "-IMAPport");
+			szIMAPSecurity = getCmdOption(argv, argv + argc, "-IMAPsecurity");
+			szIMAPUser = getCmdOption(argv, argv + argc, "-IMAPuser");
+			szIMAPPwd = getCmdOption(argv, argv + argc, "-IMAPpwd");
+			szIMAPPwd = base64_decode(szIMAPPwd);
+			szIMAPsentFolder = getCmdOption(argv, argv + argc, "-IMAPsentfolder");
+		}
+
+		int dwResult = SMTP_SendMail(szServerName, atoi(szPort.c_str()), atoi(szSecurity.c_str()), atoi(szAuth.c_str()),
+										szUser, szPwd, szFrom, szFrom, szTo, szCC, szBCC,
 										szSubject, szBody, szAttachment, atoi(szUrgent.c_str()), 0, "", atoi(szRead.c_str()));
+
+		if (dwResult == 0)
+		{
+			if (atoi(szSave.c_str()) == 1)
+			{
+				std::cout << "\n*****************************************************\n";
+				std::cout << "*                      IMAP                         *\n";
+				std::cout << "*****************************************************\n\n";
+
+				dwResult = IMAP_AppendMail(szIMAPServer, atoi(szIMAPPort.c_str()), atoi(szIMAPSecurity.c_str()),
+											szIMAPUser, szIMAPPwd, szFrom, szFrom, szTo, szCC, szBCC,
+											szSubject, szBody, szAttachment, atoi(szUrgent.c_str()), 0, "", atoi(szRead.c_str()), szIMAPsentFolder.c_str());
+			}
+		}
 
 		szServerName.clear();
 		szPort.clear();

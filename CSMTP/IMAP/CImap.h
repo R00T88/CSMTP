@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
-// SMTP Class
+// IMAP Class
 ////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#ifndef __CSMTP_H__
-#define __CSMTP_H__
+#ifndef __CIMAP_H__
+#define __CIMAP_H__
 
 #include <vector>
 #include <string.h>
@@ -22,38 +22,37 @@
 // OpenSSL 1.0.2h
 #include "openssl\ssl.h"
 
-#define TIME_IN_SEC			3 * 60	// how long client will wait for server response in non-blocking mode
-#define BUFFER_SIZE			10240	// SendData and RecvData buffers sizes
-#define BUFFER_MSGID_SIZE	200		
-#define MSG_SIZE_IN_MB		10		// Maximum size of the message with all attachments
-#define COUNTER_VALUE		100		// How many times program will try to receive data
-#define SMTP_BYTE_SIZE_FILE 54
+#define TIME_IN_SEC			3 * 60
+#define BUFFER_SIZE			10240
+#define BUFFER_MSGID_SIZE	200  
+#define MSG_SIZE_IN_MB		10
+#define IMAP_BYTE_SIZE_FILE 54
 
-const char SMTP_BOUNDARY_ALTERNATIVE[] = "------------030003070305060005000805";
-const char SMTP_BOUNDARY_MIXED[] = "------------000406070805010304010807";
+const char IMAP_BOUNDARY_ALTERNATIVE[] = "------------030003070305060005000805";
+const char IMAP_BOUNDARY_MIXED[] = "------------000406070805010304010807";
 
-enum CSmptXPriority
+enum CImapXPriority
 {
-	XPRIORITY_HIGH = 2,
-	XPRIORITY_NORMAL = 3,
-	XPRIORITY_LOW = 4
+	IMAP_XPRIORITY_HIGH = 2,
+	IMAP_XPRIORITY_NORMAL = 3,
+	IMAP_XPRIORITY_LOW = 4
 };
 
-enum SMTP_SECURITY_TYPE
+enum IMAP_SECURITY_TYPE
 {
-	NO_SECURITY,
-	USE_TLS,
-	USE_SSL,
-	DO_NOT_SET
+	IMAP_NO_SECURITY,
+	IMAP_USE_TLS,
+	IMAP_USE_SSL,
+	IMAP_DO_NOT_SET
 };
 
-class ECSmtp
+class ECImap
 {
 public:
-	enum CSmtpError
+	enum CImapError
 	{
-		CSMTP_NO_ERROR = 0,
-		WSA_STARTUP = 50, // WSAGetLastError()
+		CIMAP_NO_ERROR = 0,
+		WSA_STARTUP = 115, // WSAGetLastError()
 		WSA_VER,
 		WSA_SEND,
 		WSA_RECV,
@@ -64,19 +63,20 @@ public:
 		WSA_IOCTLSOCKET,
 		WSA_SELECT,
 		BAD_IPV4_ADDR,
-		UNDEF_MSG_HEADER = 65,
+		UNDEF_MSG_HEADER = 130,
 		UNDEF_MAIL_FROM,
 		UNDEF_SUBJECT,
 		UNDEF_RECIPIENTS,
 		UNDEF_LOGIN,
 		UNDEF_PASSWORD,
-		BAD_DECODE_CHALLENGE,
 		BAD_LOGIN_PASSWORD,
 		BAD_DIGEST_RESPONSE,
 		BAD_SERVER_NAME,
 		UNDEF_RECIPIENT_MAIL,
-		COMMAND_MAIL_FROM = 76,
+		COMMAND_MAIL_FROM = 145,
 		COMMAND_EHLO,
+		COMMAND_COMPATIBILITY,
+		COMMAND_APPEND,
 		COMMAND_AUTH_PLAIN,
 		COMMAND_AUTH_LOGIN,
 		COMMAND_AUTH_CRAMMD5,
@@ -85,8 +85,11 @@ public:
 		COMMAND_DATA,
 		COMMAND_QUIT,
 		COMMAND_RCPT_TO,
+		COMMAND_LOGOUT,
+		COMMAND_FAILED,
+		COMMAND_SELECT,
 		MSG_BODY_ERROR,
-		CONNECTION_CLOSED = 90, // by server
+		CONNECTION_CLOSED = 165, // by server
 		SERVER_NOT_READY, // remote server
 		SERVER_NOT_RESPONDING,
 		SELECT_TIMEOUT,
@@ -104,7 +107,7 @@ public:
 		COMMAND_DATABLOCK,
 		STARTTLS_NOT_SUPPORTED,
 		LOGIN_NOT_SUPPORTED,
-		ERRNO_EPERM = 301,
+		ERRNO_EPERM = 401,
 		ERRNO_ENOENT,
 		ERRNO_ESRCH,
 		ERRNO_EINTR,
@@ -118,7 +121,7 @@ public:
 		ERRNO_ENOMEM,
 		ERRNO_EACCES,
 		ERRNO_EFAULT,
-		ERRNO_EBUSY = 316,
+		ERRNO_EBUSY = 416,
 		ERRNO_EEXIST,
 		ERRNO_EXDEV,
 		ERRNO_ENODEV,
@@ -128,7 +131,7 @@ public:
 		ERRNO_ENFILE,
 		ERRNO_EMFILE,
 		ERRNO_ENOTTY,
-		ERRNO_EFBIG = 327,
+		ERRNO_EFBIG = 427,
 		ERRNO_ENOSPC,
 		ERRNO_ESPIPE,
 		ERRNO_EROFS,
@@ -136,62 +139,56 @@ public:
 		ERRNO_EPIPE,
 		ERRNO_EDOM,
 		ERRNO_ERANGE,
-		ERRNO_EDEADLK = 336,
-		ERRNO_ENAMETOOLONG = 338,
+		ERRNO_EDEADLK = 436,
+		ERRNO_ENAMETOOLONG = 438,
 		ERRNO_ENOLCK,
 		ERRNO_ENOSYS,
 		ERRNO_ENOTEMPTY,
 		ERRNO_EILSEQ,
-		ERRNO_STRUNCATE = 380
+		ERRNO_STRUNCATE = 480
 	};
-	ECSmtp(CSmtpError err_) : ErrorCode(err_) {}
-	CSmtpError GetErrorNum(void) const {return ErrorCode;}
+	ECImap(CImapError err_) : ErrorCode(err_) {}
+	CImapError GetErrorNum(void) const {return ErrorCode;}
 	std::string GetErrorText(void) const;
 
 private:
-	CSmtpError ErrorCode;
+	CImapError ErrorCode;
 };
 
-enum SMTP_COMMAND
+enum IMAP_COMMAND
 {
-	command_INIT,
-	command_EHLO,
-	command_AUTHPLAIN,
-	command_AUTHLOGIN,
-	command_AUTHCRAMMD5,
-	command_AUTHDIGESTMD5,
-	command_DIGESTMD5,
-	command_USER,
-	command_PASSWORD,
-	command_MAILFROM,
-	command_RCPTTO,
-	command_DATA,
-	command_DATABLOCK,
-	command_DATAEND,
-	command_QUIT,
-	command_STARTTLS
+	command_INIT_IMAP,
+	command_STARTTLS_IMAP,
+	command_CAPABILITY,
+	command_LOGIN,
+	command_SELECT,
+	command_APPEND,
+	command_APPEND_DONE,
+	command_LOGOUT
 };
 
-typedef struct tagCommand_Entry
+typedef struct Imap_tagCommand_Entry
 {
-	SMTP_COMMAND       command;
-	int                send_timeout;	 // 0 means no send is required
-	int                recv_timeout;	 // 0 means no recv is required
-	int                valid_reply_code; // 0 means no recv is required, so no reply code
-	ECSmtp::CSmtpError error;
-}Command_Entry;
+	IMAP_COMMAND		command;
+	int					send_timeout;	 // 0 means no send is required
+	int					recv_timeout;	 // 0 means no recv is required
+	char*				Token;
+	char*				TokenRecv;
+	bool				bSkipToken;
+	ECImap::CImapError error;
+}Imap_Command_Entry;
 
-typedef struct Smtp_tagContent_Type
+typedef struct Imap_tagContent_Type
 {
 	char* FileExt;
 	char* FileExtContent;
-}Smtp_Content_Type;
+}Imap_Content_Type;
 
-class CSmtp  
+class CImap  
 {
 public:
-	CSmtp();
-	virtual ~CSmtp();
+	CImap();
+	virtual ~CImap();
 
 	void AddRecipient(const char *email, const char *name=NULL);
 	void AddBCCRecipient(const char *email, const char *name=NULL);
@@ -199,17 +196,11 @@ public:
 	void AddAttachment(const char *path);
 	void AddMsgLine(const char* text);
 	bool ConnectRemoteServer(const char* szServer, const unsigned short nPort_=0,
-							 SMTP_SECURITY_TYPE securityType=DO_NOT_SET,
+							 IMAP_SECURITY_TYPE securityType=IMAP_DO_NOT_SET,
 		                     bool authenticate=true, const char* login=NULL,
 							 const char* password=NULL);
 	void DisconnectRemoteServer();
-	void DelRecipients(void);
-	void DelBCCRecipients(void);
-	void DelCCRecipients(void);
-	void DelAttachments(void);
-	void DelMsgLines(void);
-	void DelMsgLine(unsigned int line);
-	void ModMsgLine(unsigned int line,const char* text);
+	
 	unsigned int GetBCCRecipientCount() const;    
 	unsigned int GetCCRecipientCount() const;
 	unsigned int GetRecipientCount() const;    
@@ -221,8 +212,8 @@ public:
 	const char* GetSenderName() const;
 	const char* GetSubject() const;
 	const char* GetXMailer() const;
-	CSmptXPriority GetXPriority() const;
-	void Send();
+	CImapXPriority GetXPriority() const;
+	void SaveMessage();
 	void SetCharSet(const char *sCharSet);
 	void SetLocalHostName(const char *sLocalHostName);
 	void SetSubject(const char*);
@@ -233,13 +224,15 @@ public:
 	void SetXMailer(const char*);
 	void SetLogin(const char*);
 	void SetPassword(const char*);
-	void SetXPriority(CSmptXPriority);
-	void SetSMTPServer(const char* server, const unsigned short port=0, bool authenticate=true);
+	void SetXPriority(CImapXPriority);
+	void SetIMAPServer(const char* server, const unsigned short port=0, bool authenticate=true);
 
-	char* szMsgId;
+	char *szMsgId;
 	long long dwNumChar;
+	long long dwNumCharSent;
 
 	std::string MsgBodyHTML;
+	std::string SentFolder;
 
 private:	
 	std::string m_sLocalHostName;
@@ -254,10 +247,10 @@ private:
 	std::string m_sIPAddr;
 	std::string m_sLogin;
 	std::string m_sPassword;
-	std::string m_sSMTPSrvName;
-	unsigned short m_iSMTPSrvPort;
+	std::string m_sIMAPSrvName;
+	unsigned short m_iIMAPSrvPort;
 	bool m_bAuthenticate;
-	CSmptXPriority m_iXPriority;
+	CImapXPriority m_iXPriority;
 	
 	char *SendBuf;
 	char *RecvBuf;
@@ -277,33 +270,32 @@ private:
 	std::vector<std::string> Attachments;
 	std::vector<std::string> MsgBody;
  
-	void ReceiveData(Command_Entry* pEntry);
-	void SendData(Command_Entry* pEntry);
+	void ReceiveData(Imap_Command_Entry* pEntry);
+	void SendData(Imap_Command_Entry* pEntry);
 	void FormatHeader(char*);
-	int SmtpXYZdigits();
-	void SayHello();
+
 	void SayQuit();
 
 // TLS/SSL extension
 public:
-	SMTP_SECURITY_TYPE GetSecurityType() const
+	IMAP_SECURITY_TYPE GetSecurityType() const
 	{ return m_type; }
-	void SetSecurityType(SMTP_SECURITY_TYPE type)
+	void SetSecurityType(IMAP_SECURITY_TYPE type)
 	{ m_type = type; }
 	bool m_bHTML;
 
 private:
-	SMTP_SECURITY_TYPE m_type;
+	IMAP_SECURITY_TYPE m_type;
 	SSL_CTX*      m_ctx;
 	SSL*          m_ssl;
 
-	void ReceiveResponse(Command_Entry* pEntry);
+	void ReceiveResponse(Imap_Command_Entry* pEntry);
 	void InitOpenSSL();
 	void OpenSSLConnect();
 	void CleanupOpenSSL();
-	void ReceiveData_SSL(SSL* ssl, Command_Entry* pEntry);
-	void SendData_SSL(SSL* ssl, Command_Entry* pEntry);
+	void ReceiveData_SSL(SSL* ssl, Imap_Command_Entry* pEntry);
+	void SendData_SSL(SSL* ssl, Imap_Command_Entry* pEntry);
 	void StartTls();
 };
 
-#endif // __CSMTP_H__
+#endif // __CIMAP_H__

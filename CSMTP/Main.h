@@ -21,13 +21,11 @@
 #include "Security\base64.h"
 
 /* Fix OpenSSL VS2015 */
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-/* Fix OpenSSL VS2015 */
-FILE _iob[] = { *stdin, *stdout, *stderr };
-extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
+/*FILE _iob[] = { *stdin, *stdout, *stderr };
+extern "C" FILE * __cdecl __iob_func(void) { return _iob; }*/
 
 #include "SMTP\CSmtp.h"
+#include "IMAP\CImap.h"
 
 #include "Util\Util.h"
 #include "Console\Console.h"

@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-
 #include "CSmtp.h"
 
 #include "..\\Security\base64.h"
@@ -270,22 +268,6 @@ void CSmtp::AddAttachment(const char *Path)
 {
 	assert(Path);
 	Attachments.insert(Attachments.end(), Path);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//        NAME: AddAttachmentName
-// DESCRIPTION: New attachment name is added.
-//   ARGUMENTS: const char *Path - file name of attachment added
-// USES GLOBAL: AttachmentsName
-// MODIFIES GL: AttachmentsName
-//     RETURNS: void
-//      AUTHOR: Jakub Piwowarczyk - Sebastiano Bertini
-// AUTHOR/DATE: 21-11-2014						
-////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddAttachmentName(const char *Path)
-{
-	assert(Path);
-	AttachmentsName.insert(AttachmentsName.end(), Path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -843,19 +825,13 @@ void CSmtp::Send()
 
 			FileExt = NULL;
 
-			if(AttachmentsName.size() > FileId)
-				strcat_s(SendBuf, BUFFER_SIZE, AttachmentsName[FileId].c_str());
-			else
-				strcat_s(SendBuf, BUFFER_SIZE, &FileName[Attachments[FileId].find_last_of("\\") + 1]);
+			strcat_s(SendBuf, BUFFER_SIZE, &FileName[Attachments[FileId].find_last_of("\\") + 1]);
 
 			strcat_s(SendBuf, BUFFER_SIZE, "\"\r\n");
 			strcat_s(SendBuf, BUFFER_SIZE, "Content-Transfer-Encoding: base64\r\n");
 			strcat_s(SendBuf, BUFFER_SIZE, "Content-Disposition: attachment;\r\n\tfilename=\"");
 
-			if(AttachmentsName.size() > FileId)
-				strcat_s(SendBuf, BUFFER_SIZE, AttachmentsName[FileId].c_str());
-			else
-				strcat_s(SendBuf, BUFFER_SIZE, &FileName[Attachments[FileId].find_last_of("\\") + 1]);
+			strcat_s(SendBuf, BUFFER_SIZE, &FileName[Attachments[FileId].find_last_of("\\") + 1]);
 
 			strcat_s(SendBuf, BUFFER_SIZE, "\"\r\n");
 			strcat_s(SendBuf, BUFFER_SIZE, "\r\n");
@@ -998,11 +974,10 @@ void CSmtp::Send()
 			dwNumChar+=strlen(SendBuf);
 		}
 		
-		pEntry = FindCommandEntry(command_DATAEND);
 		// <CRLF> . <CRLF>
+		pEntry = FindCommandEntry(command_DATAEND);
 		strcpy_s(SendBuf, BUFFER_SIZE, "\r\n.\r\n");
 		SendData(pEntry);
-		dwNumChar+=(strlen(SendBuf)-1);
 		ReceiveResponse(pEntry);
 	}
 	catch(const ECSmtp&)
@@ -1369,7 +1344,17 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 					throw ECSmtp(ECSmtp::BAD_SERVER_NAME);
 
 				struct sockaddr_in *s = (struct sockaddr_in *)&addr;
-				std::string uri = inet_ntoa(s->sin_addr);
+
+				char str[INET_ADDRSTRLEN];
+
+				memset(str, 0, INET_ADDRSTRLEN);
+
+				inet_ntop(AF_INET, &(s->sin_addr), str, INET_ADDRSTRLEN);
+
+				std::string uri = str;
+
+				memset(str, 0, INET_ADDRSTRLEN);
+
 				uri = "smtp/" + uri;
 
 				/////////////////////////////////////////////////////////////////////
@@ -1662,7 +1647,7 @@ void CSmtp::FormatHeader(char* header)
 
 	// Date: <SP> <dd> <SP> <mon> <SP> <yy> <SP> <hh> ":" <mm> ":" <ss> <SP> <zone> <CRLF>
 	if(dwResult >= 0)
-		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d +%lld00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
+		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d +%02lld00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
 																	month[timeinfo.tm_mon],
 																	timeinfo.tm_year + 1900,
 																	timeinfo.tm_hour,
@@ -1670,22 +1655,22 @@ void CSmtp::FormatHeader(char* header)
 																	timeinfo.tm_sec,
 																	dwResult); 
 	else
-		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d -%lld00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
+		sprintf_s(header, BUFFER_SIZE, "Date: %s, %02d %s %04d %02d:%02d:%02d -%02lld00\r\n", weekday[timeinfo.tm_wday], timeinfo.tm_mday,
 																	month[timeinfo.tm_mon],
 																	timeinfo.tm_year + 1900,
 																	timeinfo.tm_hour,
 																	timeinfo.tm_min,
 																	timeinfo.tm_sec,
-																	dwResult*-1); 
+																	dwResult * -1); 
 	
-	unsigned long long dwRandomHash;
+	int dwRandomHash;
 
 	// Message-Id:
 	strcat_s(header, BUFFER_SIZE, "Message-Id: <");
 
-	dwRandomHash = ((timeinfo.tm_year + 1900 * rand()) + (timeinfo.tm_mon + rand()) + (timeinfo.tm_mday + rand()) + (timeinfo.tm_hour * rand()) + (timeinfo.tm_min + rand()) + (timeinfo.tm_sec * rand()) + rand()) * rand();
+	dwRandomHash = timeinfo.tm_min + (rand() % timeinfo.tm_min);
 
-	sprintf_s(szMsgId, BUFFER_MSGID_SIZE, "%04d%02d%02d%02d%02d%02d.%llu@", timeinfo.tm_year + 1900, 
+	sprintf_s(szMsgId, BUFFER_MSGID_SIZE, "%04d%02d%02d%02d%02d%02d.%011X@", timeinfo.tm_year + 1900, 
 												timeinfo.tm_mon + 1,
 												timeinfo.tm_mday,
 												timeinfo.tm_hour,
@@ -2573,7 +2558,7 @@ void CSmtp::SayHello()
 	sprintf_s(SendBuf, BUFFER_SIZE, "EHLO %s\r\n", GetLocalHostName());
 	SendData(pEntry);
 	ReceiveResponse(pEntry);
-	m_bConnected=true;
+	m_bConnected = true;
 }
 
 void CSmtp::SayQuit()
@@ -2660,7 +2645,7 @@ void CSmtp::ReceiveData_SSL(SSL* ssl, Command_Entry* pEntry)
 				
 				char* buff;
 
-				if((buff = new  char[buff_len]) == NULL)
+				if((buff = new char[buff_len]) == NULL)
 					throw ECSmtp(ECSmtp::LACK_OF_MEMORY);
 
 				res = SSL_read(ssl, buff, buff_len);
@@ -2749,10 +2734,13 @@ void CSmtp::ReceiveResponse(Command_Entry* pEntry)
 	while(!bFinish)
 	{
 		ReceiveData(pEntry);
+
 		line.append(RecvBuf);
 		size_t len = line.length();
 		size_t begin = 0;
 		size_t offset = 0;
+
+		std::cout << RecvBuf;
 
 		if(pEntry->command == command_INIT)
 		{
@@ -2802,8 +2790,6 @@ void CSmtp::ReceiveResponse(Command_Entry* pEntry)
 
 	strcpy_s(RecvBuf, BUFFER_SIZE, line.c_str());
 
-	std::cout << RecvBuf;
-
 	line.clear();
 
 	if(reply_code != pEntry->valid_reply_code)
@@ -2834,14 +2820,14 @@ void CSmtp::SendData_SSL(SSL* ssl, Command_Entry* pEntry)
 		FD_ZERO(&fdwrite);
 		FD_ZERO(&fdread);
 
-		FD_SET(hSocket,&fdwrite);
+		FD_SET(hSocket, &fdwrite);
 
 		if(write_blocked_on_read)
 		{
 			FD_SET(hSocket, &fdread);
 		}
 
-		if((res = select(0,&fdread,&fdwrite,NULL,&time)) == SOCKET_ERROR)
+		if((res = select(0, &fdread, &fdwrite, NULL, &time)) == SOCKET_ERROR)
 		{
 			FD_ZERO(&fdwrite);
 			FD_ZERO(&fdread);
@@ -2856,7 +2842,7 @@ void CSmtp::SendData_SSL(SSL* ssl, Command_Entry* pEntry)
 			throw ECSmtp(ECSmtp::SERVER_NOT_RESPONDING);
 		}
 
-		if(FD_ISSET(hSocket,&fdwrite) || (write_blocked_on_read && FD_ISSET(hSocket, &fdread)) )
+		if(FD_ISSET(hSocket, &fdwrite) || (write_blocked_on_read && FD_ISSET(hSocket, &fdread)) )
 		{
 			write_blocked_on_read = 0;
 
@@ -2996,7 +2982,6 @@ void CSmtp::CleanupOpenSSL()
 	{
 		SSL_shutdown (m_ssl);  /* send SSL/TLS close_notify */
 		SSL_free (m_ssl);
-		sk_SSL_COMP_free(SSL_COMP_get_compression_methods());
 		m_ssl = NULL;
 	}
 

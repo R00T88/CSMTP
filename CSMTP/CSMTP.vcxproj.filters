@@ -28,6 +28,9 @@
     <Filter Include="File di intestazione\SMTP">
       <UniqueIdentifier>{189fccc0-68ce-43be-bf4d-d020ae66f6d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di intestazione\IMAP">
+      <UniqueIdentifier>{886678f5-d84c-4dfb-9478-ea6989f27ea6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -38,6 +41,9 @@
     </ClCompile>
     <ClCompile Include="SMTP\CSmtp.cpp">
       <Filter>File di intestazione\SMTP</Filter>
+    </ClCompile>
+    <ClCompile Include="IMAP\CImap.cpp">
+      <Filter>File di intestazione\IMAP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="IMAP\CImap.h">
+      <Filter>File di intestazione\IMAP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
