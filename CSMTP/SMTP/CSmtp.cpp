@@ -209,8 +209,10 @@ CSmtp::CSmtp()
 	m_bHTML = false;
 	m_bReadReceipt = false;
 
-	m_sCharSet = "iso-8859-15";
+	m_sCharSet = "ISO-8859-15";
 	m_sCharEncoding = "8bit";
+
+	std::transform(m_sCharSet.begin(), m_sCharSet.end(), m_sCharSet.begin(), ::toupper);
 
 	m_sXMailer = "v5.0";
 
@@ -818,22 +820,64 @@ void CSmtp::Send()
 			{
 				strcat_s(SendBuf, BUFFER_SIZE, "Content-Type: ");
 				strcat_s(SendBuf, BUFFER_SIZE, Smtp_FindContentType(FileExt));
-				strcat_s(SendBuf, BUFFER_SIZE, ";\r\n\tname=\"");
+				strcat_s(SendBuf, BUFFER_SIZE, ";\r\n\tname=");
 			}
 			else
-				strcat_s(SendBuf, BUFFER_SIZE, "Content-Type: application/octet-stream;\r\n\tname=\"");
+				strcat_s(SendBuf, BUFFER_SIZE, "Content-Type: application/octet-stream;\r\n\tname=");
 
 			FileExt = NULL;
 
-			strcat_s(SendBuf, BUFFER_SIZE, &FileName[Attachments[FileId].find_last_of("\\") + 1]);
+			if (strcmp(m_sCharSet.c_str(), "UTF-8") == 0)
+			{
+				std::string szAttNameEncoded;
 
-			strcat_s(SendBuf, BUFFER_SIZE, "\"\r\n");
+				strcat_s(SendBuf, BUFFER_SIZE, "\"");
+
+				szAttNameEncoded.append("=?UTF-8?B?");
+				szAttNameEncoded.append(base64_encode(reinterpret_cast<const unsigned char*>(&FileName[Attachments[FileId].find_last_of("\\") + 1]), static_cast<unsigned int>(strlen(&FileName[Attachments[FileId].find_last_of("\\") + 1]))));
+				szAttNameEncoded.append("?=");
+
+				strcat_s(SendBuf, BUFFER_SIZE, szAttNameEncoded.c_str());
+
+				strcat_s(SendBuf, BUFFER_SIZE, "\"");
+
+				szAttNameEncoded.clear();
+			}
+			else
+			{
+				strcat_s(SendBuf, BUFFER_SIZE, "\"");
+				strcat_s(SendBuf, BUFFER_SIZE, &FileName[Attachments[FileId].find_last_of("\\") + 1]);
+				strcat_s(SendBuf, BUFFER_SIZE, "\"");
+			}
+				
+			strcat_s(SendBuf, BUFFER_SIZE, "\r\n");
 			strcat_s(SendBuf, BUFFER_SIZE, "Content-Transfer-Encoding: base64\r\n");
-			strcat_s(SendBuf, BUFFER_SIZE, "Content-Disposition: attachment;\r\n\tfilename=\"");
+			strcat_s(SendBuf, BUFFER_SIZE, "Content-Disposition: attachment;\r\n\tfilename=");
 
-			strcat_s(SendBuf, BUFFER_SIZE, &FileName[Attachments[FileId].find_last_of("\\") + 1]);
+			if (strcmp(m_sCharSet.c_str(), "UTF-8") == 0)
+			{
+				std::string szAttNameEncoded;
 
-			strcat_s(SendBuf, BUFFER_SIZE, "\"\r\n");
+				strcat_s(SendBuf, BUFFER_SIZE, "\"");
+
+				szAttNameEncoded.append("=?UTF-8?B?");
+				szAttNameEncoded.append(base64_encode(reinterpret_cast<const unsigned char*>(&FileName[Attachments[FileId].find_last_of("\\") + 1]), static_cast<unsigned int>(strlen(&FileName[Attachments[FileId].find_last_of("\\") + 1]))));
+				szAttNameEncoded.append("?=");
+
+				strcat_s(SendBuf, BUFFER_SIZE, szAttNameEncoded.c_str());
+
+				strcat_s(SendBuf, BUFFER_SIZE, "\"");
+
+				szAttNameEncoded.clear();
+			}
+			else
+			{
+				strcat_s(SendBuf, BUFFER_SIZE, "\"");
+				strcat_s(SendBuf, BUFFER_SIZE, &FileName[Attachments[FileId].find_last_of("\\") + 1]);
+				strcat_s(SendBuf, BUFFER_SIZE, "\"");
+			}
+
+			strcat_s(SendBuf, BUFFER_SIZE, "\r\n");
 			strcat_s(SendBuf, BUFFER_SIZE, "\r\n");
 
 			SendData(pEntry);
@@ -1683,16 +1727,53 @@ void CSmtp::FormatHeader(char* header)
 	strcat_s(header, BUFFER_SIZE, ">\r\n");
 
 	// From: <SP> <sender>  <SP> "<" <sender-email> ">" <CRLF>
-	if(!m_sMailFrom.size()) throw ECSmtp(ECSmtp::UNDEF_MAIL_FROM);
+	if(!m_sMailFrom.size()) 
+		throw ECSmtp(ECSmtp::UNDEF_MAIL_FROM);
 	 
-	strcat_s(header, BUFFER_SIZE, "From: \"");
+	strcat_s(header, BUFFER_SIZE, "From: ");
 	
-	if(m_sNameFrom.size()) 
-		strcat_s(header, BUFFER_SIZE, m_sNameFrom.c_str());
-	else
-		strcat_s(header, BUFFER_SIZE, m_sMailFrom.c_str());
+	if (m_sNameFrom.size())
+	{
+		if (strcmp(m_sCharSet.c_str(), "UTF-8") == 0)
+		{
+			std::string szFromNameEncoded;
 
-	strcat_s(header, BUFFER_SIZE, "\"");
+			szFromNameEncoded.append("=?UTF-8?B?");
+			szFromNameEncoded.append(base64_encode(reinterpret_cast<const unsigned char*>(m_sNameFrom.c_str()), static_cast<unsigned int>(m_sNameFrom.size())));
+			szFromNameEncoded.append("?=");
+
+			strcat_s(header, BUFFER_SIZE, szFromNameEncoded.c_str());
+
+			szFromNameEncoded.clear();
+		}
+		else
+		{
+			strcat_s(header, BUFFER_SIZE, "\"");
+			strcat_s(header, BUFFER_SIZE, m_sNameFrom.c_str());
+			strcat_s(header, BUFFER_SIZE, "\"");
+		}	
+	}
+	else
+	{
+		if (strcmp(m_sCharSet.c_str(), "UTF-8") == 0)
+		{
+			std::string szFromNameEncoded;
+
+			szFromNameEncoded.append("=?UTF-8?B?");
+			szFromNameEncoded.append(base64_encode(reinterpret_cast<const unsigned char*>(m_sMailFrom.c_str()), static_cast<unsigned int>(m_sMailFrom.size())));
+			szFromNameEncoded.append("?=");
+
+			strcat_s(header, BUFFER_SIZE, szFromNameEncoded.c_str());
+
+			szFromNameEncoded.clear();
+		}
+		else
+		{
+			strcat_s(header, BUFFER_SIZE, "\"");
+			strcat_s(header, BUFFER_SIZE, m_sMailFrom.c_str());
+			strcat_s(header, BUFFER_SIZE, "\"");
+		}
+	}
 
 	strcat_s(header, BUFFER_SIZE, " <");
 	strcat_s(header, BUFFER_SIZE, m_sMailFrom.c_str());
@@ -1753,12 +1834,28 @@ void CSmtp::FormatHeader(char* header)
 	}
 
 	// Subject: <SP> <subject-text> <CRLF>
-	if(!m_sSubject.size()) 
+	if(!m_sSubject.size())
 		strcat_s(header, BUFFER_SIZE, "Subject:  ");
 	else
 	{
-	  strcat_s(header, BUFFER_SIZE, "Subject: ");
-	  strcat_s(header, BUFFER_SIZE, m_sSubject.c_str());
+		if(strcmp(m_sCharSet.c_str(), "UTF-8") == 0)
+		{
+			std::string szSubjectEncoded;
+
+			szSubjectEncoded.append("=?UTF-8?B?");
+			szSubjectEncoded.append(base64_encode(reinterpret_cast<const unsigned char*>(m_sSubject.c_str()), static_cast<unsigned int>(m_sSubject.size())));
+			szSubjectEncoded.append("?=");
+
+			strcat_s(header, BUFFER_SIZE, "Subject: ");
+			strcat_s(header, BUFFER_SIZE, szSubjectEncoded.c_str());
+
+			szSubjectEncoded.clear();
+		}
+		else
+		{
+			strcat_s(header, BUFFER_SIZE, "Subject: ");
+			strcat_s(header, BUFFER_SIZE, m_sSubject.c_str());
+		}
 	}
 
 	strcat_s(header, BUFFER_SIZE, "\r\n");
