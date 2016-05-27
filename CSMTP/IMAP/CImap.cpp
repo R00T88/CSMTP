@@ -1901,25 +1901,22 @@ void CImap::ReceiveResponse(Imap_Command_Entry* pEntry)
 	// check return string for success
 	if(!pEntry->bSkipToken && pEntry->command != command_APPEND)
 	{
-		char* Parser;
+		std::string szTokenOK;
 
-		if((Parser = new  char[10]) == NULL)
-			throw ECImap(ECImap::LACK_OF_MEMORY);
+		szTokenOK.append(pEntry->TokenRecv);
+		szTokenOK.append(" ");
+		szTokenOK.append("OK");
 
-		sprintf_s(Parser, 10, "%s OK", pEntry->TokenRecv);
-
-		std::string::size_type bFound = line.find(Parser);
+		std::string::size_type bFound = line.find(szTokenOK.c_str());
 
 		if(line.npos == bFound)
 		{
 			line.clear();
-			delete[] Parser;
-			Parser = NULL;
+			szTokenOK.clear();
 			throw ECImap(pEntry->error);
 		}
 
-		delete[] Parser;
-		Parser = NULL;
+		szTokenOK.clear();
 	}
 
 	strcpy_s(RecvBuf, BUFFER_SIZE, line.c_str());
