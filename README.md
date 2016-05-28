@@ -11,7 +11,8 @@ CSMTP allow you to send email via command line and save message to sent folder
   - Support urgent flag
   - Support read notification
   - Support password encoding for command line
-  - Support save message to sent folder
+  - Support save message to specific folder
+  - Support UTF-8
   
 #Supported OS
   - Win7 x86/x64 - Win8 x86/x64 - Win8.1 x86/x64 - Win10 x64
