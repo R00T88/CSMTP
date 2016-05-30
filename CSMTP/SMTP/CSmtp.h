@@ -260,9 +260,13 @@ private:
 	bool m_bAuthenticate;
 	CSmptXPriority m_iXPriority;
 	
-	char *SendBuf;
-	char *RecvBuf;
+	char* SendBuf;
+	char* RecvBuf;
 	
+	char* FileBuf;
+	char* FileName;
+	FILE* hFile;
+
 	SOCKET hSocket;
 	bool m_bConnected;
 

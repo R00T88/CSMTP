@@ -76,7 +76,7 @@ Smtp_Content_Type Smtp_content_list[] =
 
 char* Smtp_FindContentType(char* FileExt)
 {
-	for(size_t i = 0; i < sizeof(Smtp_content_list)/sizeof(Smtp_content_list[0]); ++i)
+	for(size_t i = 0; i < sizeof(Smtp_content_list) / sizeof(Smtp_content_list[0]); ++i)
 	{
 		if(strcmp(Smtp_content_list[i].FileExt, FileExt) == 0)
 		{
@@ -90,7 +90,7 @@ char* Smtp_FindContentType(char* FileExt)
 Command_Entry* FindCommandEntry(SMTP_COMMAND command)
 {
 	Command_Entry* pEntry = NULL;
-	for(size_t i = 0; i < sizeof(command_list)/sizeof(command_list[0]); ++i)
+	for(size_t i = 0; i < sizeof(command_list) / sizeof(command_list[0]); ++i)
 	{
 		if(command_list[i].command == command)
 		{
@@ -120,7 +120,7 @@ bool IsKeywordSupported(const char* response, const char* keyword)
 
 	for(; pos < res_len - key_len + 1; ++pos)
 	{
-		if(_strnicmp(keyword, response+pos, key_len) == 0)
+		if(_strnicmp(keyword, response + pos, key_len) == 0)
 		{
 			if(pos > 0 &&
 				(response[pos - 1] == '-' ||
@@ -175,7 +175,7 @@ CSmtp::CSmtp()
 	if (WSAStartup(wVer, &wsaData) != NO_ERROR)
 		throw ECSmtp(ECSmtp::WSA_STARTUP);
 
-	if (LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) 
+	if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2 ) 
 	{
 		WSACleanup();
 		throw ECSmtp(ECSmtp::WSA_VER);
@@ -233,6 +233,23 @@ CSmtp::~CSmtp()
 {
 	if(m_bConnected) 
 		DisconnectRemoteServer();
+
+	if(FileBuf != NULL)
+	{
+		delete[] FileBuf;
+		FileBuf = NULL;
+	}
+
+	if(FileName != NULL)
+	{
+		delete[] FileName;
+		FileName = NULL;
+	}
+
+	if(hFile != NULL)
+	{
+		fclose(hFile);
+	}
 
 	if(SendBuf != NULL)
 	{
@@ -500,9 +517,6 @@ void CSmtp::ModMsgLine(unsigned int Line,const char* Text)
 void CSmtp::Send()
 {
 	unsigned int i, rcpt_count, res, FileId;
-	char* FileBuf = NULL;
-	char* FileName = NULL;
-	FILE* hFile = NULL;
 	unsigned long int FileSize, TotalSize, MsgPart;
 	errno_t err;
 
@@ -671,16 +685,16 @@ void CSmtp::Send()
 			ReceiveResponse(pEntry);
 		}
 		
-		pEntry = FindCommandEntry(command_DATA);
 		// DATA <CRLF>
+		pEntry = FindCommandEntry(command_DATA);
 		strcpy_s(SendBuf, BUFFER_SIZE, "DATA\r\n");
 		SendData(pEntry);
 		ReceiveResponse(pEntry);
 		
 		dwNumChar = 0;
 
+		// DATABLOCK
 		pEntry = FindCommandEntry(command_DATABLOCK);
-		// send header(s)
 		FormatHeader(SendBuf);
 		SendData(pEntry);
 		dwNumChar+=strlen(SendBuf);

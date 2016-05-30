@@ -68,7 +68,7 @@ Imap_Content_Type Imap_content_list[] =
 
 char* Imap_FindContentType(char* FileExt)
 {
-	for(size_t i = 0; i < sizeof(Imap_content_list)/sizeof(Imap_content_list[0]); ++i)
+	for(size_t i = 0; i < sizeof(Imap_content_list) / sizeof(Imap_content_list[0]); ++i)
 	{
 		if(strcmp(Imap_content_list[i].FileExt, FileExt) == 0)
 		{
@@ -82,7 +82,7 @@ char* Imap_FindContentType(char* FileExt)
 Imap_Command_Entry* Imap_FindCommandEntry(IMAP_COMMAND command)
 {
 	Imap_Command_Entry* pEntry = NULL;
-	for(size_t i = 0; i < sizeof(Imap_command_list)/sizeof(Imap_command_list[0]); ++i)
+	for(size_t i = 0; i < sizeof(Imap_command_list) / sizeof(Imap_command_list[0]); ++i)
 	{
 		if(Imap_command_list[i].command == command)
 		{
@@ -111,7 +111,7 @@ bool Imap_IsKeywordSupported(const char* response, const char* keyword)
 
 	for(; pos < res_len - key_len + 1; ++pos)
 	{
-		if(_strnicmp(keyword, response+pos, key_len) == 0)
+		if(_strnicmp(keyword, response + pos, key_len) == 0)
 		{
 			if(pos > 0 &&
 				(response[pos - 1] == '-' ||
@@ -120,12 +120,12 @@ bool Imap_IsKeywordSupported(const char* response, const char* keyword)
 			{
 				if(pos+key_len < res_len)
 				{
-					if(response[pos+key_len] == ' ' ||
-					   response[pos+key_len] == '=')
+					if(response[pos + key_len] == ' ' ||
+					   response[pos + key_len] == '=')
 					{
 						return true;
 					}
-					else if(pos+key_len+1 < res_len)
+					else if(pos + key_len + 1 < res_len)
 					{
 						if(response[pos+key_len] == '\r' &&
 						   response[pos+key_len+1] == '\n')
@@ -224,6 +224,23 @@ CImap::~CImap()
 {
 	if(m_bConnected) 
 		DisconnectRemoteServer();
+
+	if(FileBuf != NULL)
+	{
+		delete[] FileBuf;
+		FileBuf = NULL;
+	}
+
+	if(FileName != NULL)
+	{
+		delete[] FileName;
+		FileName = NULL;
+	}
+
+	if(hFile != NULL)
+	{
+		fclose(hFile);
+	}
 
 	if(SendBuf)
 	{
@@ -376,8 +393,6 @@ void CImap::AddMsgLine(const char* Text)
 void CImap::SaveMessage()
 {
 	unsigned int i, res, FileId;
-	char *FileBuf = NULL, *FileName = NULL;
-	FILE* hFile = NULL;
 	unsigned long int FileSize, TotalSize, MsgPart;
 
 	// ***** CONNECTING TO IMAP SERVER *****

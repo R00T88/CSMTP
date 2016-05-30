@@ -228,7 +228,7 @@ public:
 	void SetXPriority(CImapXPriority);
 	void SetIMAPServer(const char* server, const unsigned short port=0, bool authenticate=true);
 
-	char *szMsgId;
+	char* szMsgId;
 	long long dwNumChar;
 	long long dwNumCharSent;
 
@@ -253,9 +253,13 @@ private:
 	bool m_bAuthenticate;
 	CImapXPriority m_iXPriority;
 	
-	char *SendBuf;
-	char *RecvBuf;
+	char* SendBuf;
+	char* RecvBuf;
 	
+	char* FileBuf;
+	char* FileName;
+	FILE* hFile;
+
 	SOCKET hSocket;
 	bool m_bConnected;
 
