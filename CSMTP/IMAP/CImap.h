@@ -9,6 +9,7 @@
 #include <vector>
 #include <string.h>
 #include <assert.h>
+#include <algorithm>
 
 #include <WS2tcpip.h>
 #include <winsock2.h>
