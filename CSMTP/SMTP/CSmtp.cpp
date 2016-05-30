@@ -183,7 +183,7 @@ CSmtp::CSmtp()
 
 	char* hostname;
 	
-	if((hostname = new  char[MAX_PATH]) == NULL)
+	if((hostname = new char[MAX_PATH]) == NULL)
 		throw ECSmtp(ECSmtp::LACK_OF_MEMORY);
 
 	if(gethostname(hostname, MAX_PATH) == SOCKET_ERROR) 
@@ -368,7 +368,7 @@ void CSmtp::AddBCCRecipient(const char *email, const char *name)
 ////////////////////////////////////////////////////////////////////////////////
 void CSmtp::AddMsgLine(const char* Text)
 {
-	MsgBody.insert(MsgBody.end(), Text);
+	MsgBody.push_back(Text);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
