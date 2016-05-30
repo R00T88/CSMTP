@@ -1877,7 +1877,7 @@ void CImap::ReceiveData_SSL(SSL* ssl, Imap_Command_Entry* pEntry)
 		{
 			while(1)
 			{
-				read_blocked_on_write=0;
+				read_blocked_on_write = 0;
 
 				const int buff_len = 1024;
 				char* buff;
@@ -1888,18 +1888,26 @@ void CImap::ReceiveData_SSL(SSL* ssl, Imap_Command_Entry* pEntry)
 				res = SSL_read(ssl, buff, buff_len);
 
 				int ssl_err = SSL_get_error(ssl, res);
+
 				if(ssl_err == SSL_ERROR_NONE)
 				{
 					if(offset + res > BUFFER_SIZE - 1)
 					{
 						FD_ZERO(&fdread);
 						FD_ZERO(&fdwrite);
+				
+						delete[] buff;
+						buff = NULL;
+
 						throw ECImap(ECImap::LACK_OF_MEMORY);
 					}
+
 					strncpy_s(RecvBuf + offset, BUFFER_SIZE, buff, res);
+					
 					delete[] buff;
 					buff = NULL;
 					offset += res;
+					
 					if(SSL_pending(ssl))
 					{
 						continue;

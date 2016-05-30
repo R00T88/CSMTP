@@ -2768,10 +2768,15 @@ void CSmtp::ReceiveData_SSL(SSL* ssl, Command_Entry* pEntry)
 					{
 						FD_ZERO(&fdread);
 						FD_ZERO(&fdwrite);
+					
+						delete[] buff;
+						buff = NULL;
+
 						throw ECSmtp(ECSmtp::LACK_OF_MEMORY);
 					}
 
 					strncpy_s(RecvBuf + offset, BUFFER_SIZE, buff, res);
+
 					delete[] buff;
 					buff = NULL;
 					offset += res;
