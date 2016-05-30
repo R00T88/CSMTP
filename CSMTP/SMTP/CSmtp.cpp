@@ -268,8 +268,7 @@ CSmtp::~CSmtp()
 ////////////////////////////////////////////////////////////////////////////////
 void CSmtp::AddAttachment(const char *Path)
 {
-	assert(Path);
-	Attachments.insert(Attachments.end(), Path);
+	Attachments.push_back(Path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -297,7 +296,7 @@ void CSmtp::AddRecipient(const char *email, const char *name)
 	else
 		recipient.Name.clear();
 
-	Recipients.insert(Recipients.end(), recipient);   
+	Recipients.push_back(recipient);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -325,7 +324,7 @@ void CSmtp::AddCCRecipient(const char *email, const char *name)
 	else 
 		recipient.Name.clear();
 
-	CCRecipients.insert(CCRecipients.end(), recipient);
+	CCRecipients.push_back(recipient);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -353,7 +352,7 @@ void CSmtp::AddBCCRecipient(const char *email, const char *name)
 	else 
 		recipient.Name.clear();
 
-	BCCRecipients.insert(BCCRecipients.end(), recipient);
+	BCCRecipients.push_back(recipient);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -733,7 +732,7 @@ void CSmtp::Send()
 		if(m_bHTML)
 		{
 			MsgBody.clear();
-			MsgBody.insert(MsgBody.end(), MsgBodyHTML.c_str());
+			MsgBody.push_back(MsgBodyHTML.c_str());
 			
 			sprintf_s(SendBuf, BUFFER_SIZE, "\r\n");
 			strcat_s(SendBuf, BUFFER_SIZE, "--");
