@@ -1725,7 +1725,7 @@ void CSmtp::FormatHeader(char* header)
 	// Message-Id:
 	strcat_s(header, BUFFER_SIZE, "Message-Id: <");
 
-	dwRandomHash = timeinfo.tm_min + (rand() % timeinfo.tm_min);
+	dwRandomHash = timeinfo.tm_min + (rand() % ++timeinfo.tm_min);
 
 	sprintf_s(szMsgId, BUFFER_MSGID_SIZE, "%04d%02d%02d%02d%02d%02d.%011X@", timeinfo.tm_year + 1900, 
 												timeinfo.tm_mon + 1,
